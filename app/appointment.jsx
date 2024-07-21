@@ -3,11 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Linking, Image,
 import { Link } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Navbarr from './Navbar';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const appointment = () => {
-  const [selectedButton, setSelectedButton] = useState(null);
   const [userName, setUserName] = useState('');
+  const [patientId, setPatientId] = useState('');
   const [loading, setLoading] = useState(true);
 
   const greetingOpacity = useRef(new Animated.Value(0)).current;
@@ -17,9 +16,13 @@ const appointment = () => {
     const fetchUserData = async () => {
       try {
         const name = await AsyncStorage.getItem('userName');
-        
+        const id = await AsyncStorage.getItem('patientId');
+
         if (name !== null) {
           setUserName(name);
+        }
+        if (id !== null) {
+          setPatientId(id);
         }
       } catch (error) {
         console.error(error);
@@ -44,10 +47,6 @@ const appointment = () => {
     ]).start();
   }, []);
 
-  const handlePress = (button) => {
-    setSelectedButton(button);
-  };
-
   const handleCall = () => {
     const phoneNumber = 'tel:9074534796'; // Replace with actual receptionist number
     Linking.openURL(phoneNumber);
@@ -67,52 +66,36 @@ const appointment = () => {
         <Image source={require('../assets/SignIn.png')} style={styles.banner} />
       </View>
       <Animated.View style={[styles.greetingContainer, { opacity: greetingOpacity }]}>
-        <Text style={styles.greetingText}>Welcome,</Text>
-        <Text style={styles.userNameText}>{userName}</Text>
+        <Text style={styles.greetingText}>Welcome to Kenan,</Text>
+        <Animated.View style={[styles.userCard, { transform: [{ scale: cardScale }] }]}>
+          <Text style={styles.userCardText}>Name: {userName}</Text>
+          <Text style={styles.userCardText}>Patient ID: {patientId}</Text>
+        </Animated.View>
       </Animated.View>
       <View style={styles.cardContainer}>
         <Animated.View style={{ transform: [{ scale: cardScale }] }}>
           <TouchableOpacity
-            style={[
-              styles.card,
-              selectedButton === 'doctor' && styles.cardSelected,
-            ]}
+            style={styles.card}
             onPress={() => handlePress('doctor')}
           >
-            <Image source={require('../assets/doctor-icon.png')} style={styles.cardIcon} />
             <Link href="/doctorselection" style={styles.cardTextLink}>
-              <Text
-                style={[
-                  styles.cardText,
-                  selectedButton === 'doctor' && styles.cardTextSelected,
-                ]}
-              >
-                Select A Doctor
-              </Text>
+              <View style={styles.cardContent}>
+                <Image source={require('../assets/doctor-icon.png')} style={styles.cardIcon} />
+                <Text style={styles.cardText}>Select A Doctor</Text>
+              </View>
             </Link>
           </TouchableOpacity>
         </Animated.View>
-        
+
         <Animated.View style={{ transform: [{ scale: cardScale }] }}>
           <TouchableOpacity
-            style={[
-              styles.card,
-              selectedButton === 'receptionist' && styles.cardSelected,
-            ]}
-            onPress={() => {
-              handlePress('receptionist');
-              handleCall();
-            }}
+            style={styles.card}
+            onPress={handleCall}
           >
-            <Image source={require('../assets/receptionist-icon.png')} style={styles.cardIcon} />
-            <Text
-              style={[
-                styles.cardText,
-                selectedButton === 'receptionist' && styles.cardTextSelected,
-              ]}
-            >
-              Call the receptionist
-            </Text>
+            <View style={styles.cardContent}>
+              <Image source={require('../assets/receptionist-icon.png')} style={styles.cardIcon} />
+              <Text style={styles.cardText}>Call the receptionist</Text>
+            </View>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -155,9 +138,17 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '300',
   },
-  userNameText: {
-    color: '#189cb3',
-    fontSize: 30,
+  userCard: {
+    backgroundColor: '#189cb3',
+    borderRadius: 10,
+    padding: 20,
+    marginTop: 10,
+    alignItems: 'center',
+    width: '90%',
+  },
+  userCardText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
   },
   cardContainer: {
@@ -171,11 +162,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     alignItems: 'center',
-    width: 120,
-    height: 150,
+    width: 150,
+    height: 180,
+    justifyContent: 'center',
   },
-  cardSelected: {
-    backgroundColor: '#FF0000',
+  cardContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardIcon: {
     width: 60,
@@ -186,12 +179,9 @@ const styles = StyleSheet.create({
     textDecorationLine: 'none',
   },
   cardText: {
-    fontSize: 14,
+    fontSize: 16, // Increased font size
     color: '#fff',
     textAlign: 'center',
-  },
-  cardTextSelected: {
-    color: '#fff',
   },
 });
 

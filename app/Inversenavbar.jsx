@@ -1,10 +1,24 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Modal, Text, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Inversenavbar = () => {
   const [activeIcon, setActiveIcon] = useState(null);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('patientId');
+      setLogoutModalVisible(false);
+      router.push('/');
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while logging out");
+    }
+  };
 
   return (
     <View style={styles.navbar}>
@@ -63,22 +77,36 @@ const Inversenavbar = () => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[
-          styles.navItem,
-          activeIcon === 'profile' && styles.activeNavItem
-        ]}
-        onPress={() => setActiveIcon('profile')}
+        style={styles.navItem}
+        onPress={() => setLogoutModalVisible(true)}
       >
-        <Link href="/profile">
-          <Icon
-            name="user"
-            style={[
-              styles.navIcon,
-              activeIcon === 'profile' && styles.activeNavIcon
-            ]}
-          />
-        </Link>
+        <Icon
+          name="power"
+          style={styles.navIcon}
+        />
       </TouchableOpacity>
+
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={logoutModalVisible}
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Logout</Text>
+            <Text style={styles.modalMessage}>Are you sure you want to logout?</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalButton} onPress={handleLogout}>
+                <Text style={styles.modalButtonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setLogoutModalVisible(false)}>
+                <Text style={styles.modalButtonText}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -113,6 +141,45 @@ const styles = StyleSheet.create({
   },
   activeNavIcon: {
     color: '#FFFFFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  modalButton: {
+    padding: 10,
+    backgroundColor: '#189cb3',
+    borderRadius: 5,
+    width: 80,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

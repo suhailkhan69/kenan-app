@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Linking, Image, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Linking, Image, ActivityIndicator, Animated, BackHandler } from 'react-native';
 import { Link } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Navbarr from './Navbar';
+import { useFocusEffect } from '@react-navigation/native';
 
 const appointment = () => {
   const [userName, setUserName] = useState('');
@@ -47,6 +48,21 @@ const appointment = () => {
     ]).start();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // Prevent default back behavior
+        return true;
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      };
+    }, [])
+  );
+
   const handleCall = () => {
     const phoneNumber = 'tel:9074534796'; // Replace with actual receptionist number
     Linking.openURL(phoneNumber);
@@ -76,7 +92,6 @@ const appointment = () => {
         <Animated.View style={{ transform: [{ scale: cardScale }] }}>
           <TouchableOpacity
             style={styles.card}
-            onPress={() => handlePress('doctor')}
           >
             <Link href="/doctorselection" style={styles.cardTextLink}>
               <View style={styles.cardContent}>

@@ -7,26 +7,9 @@ import { API_BASE_URL } from '../conifg';
 const signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
   const router = useRouter();
-
-  const handleSendOtp = async () => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/send-otp`, { phoneNumber });
-      if (response.data.status === 'ok') {
-        setOtpSent(true);
-        Alert.alert("Success", "OTP sent to your phone number");
-      } else {
-        Alert.alert("Error", response.data.message);
-      }
-    } catch (error) {
-      Alert.alert("Error", "An error occurred while sending OTP");
-    }
-  };
 
   const handleSignup = async () => {
     if (password !== confirmPassword) {
@@ -38,16 +21,15 @@ const signup = () => {
       const response = await axios.post(`${API_BASE_URL}/signup`, {
         name,
         email,
-        phoneNumber,
-        otp,
         password
       });
 
       if (response.data.status === "ok") {
         Alert.alert("Success", "Account created successfully");
-        router.push('/login');
+        console.log("User ID:", response.data.userId); // Use the userId as needed
+        router.push('/login'); // Navigate to the login page
       } else {
-        Alert.alert("Error", response.data.message);
+        Alert.alert("Error", response.data.data);
       }
     } catch (error) {
       Alert.alert("Error", "An error occurred while creating the account");
@@ -76,25 +58,6 @@ const signup = () => {
       />
       <TextInput
         style={styles.input}
-        placeholder="Phone Number"
-        placeholderTextColor="#ccc"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad"
-        autoCapitalize="none"
-      />
-      {otpSent && (
-        <TextInput
-          style={styles.input}
-          placeholder="Enter OTP"
-          placeholderTextColor="#ccc"
-          value={otp}
-          onChangeText={setOtp}
-          keyboardType="numeric"
-        />
-      )}
-      <TextInput
-        style={styles.input}
         placeholder="Password"
         placeholderTextColor="#ccc"
         value={password}
@@ -109,15 +72,9 @@ const signup = () => {
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
-      {!otpSent ? (
-        <TouchableOpacity style={styles.button} onPress={handleSendOtp}>
-          <Text style={styles.buttonText}>Send OTP</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity style={styles.button} onPress={handleSignup}>
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
     </View>
   );
 };
